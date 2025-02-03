@@ -1,0 +1,18 @@
+server:
+  port: 8081
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/celia-auth
+  application:
+    name: auth-service
+
+app:
+  keycloak:
+    serverUrl: http://localhost:8080
+    realm: celia-auth
+    clientId: spring-auth-service-client
+    clientSecret: 15o0ClbLC4ZSQzCZYj4360EfOM4mPCqN

@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: keycloak
     ports:
       - "5432:5432"
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data 
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -26,3 +28,6 @@ services:
     ports:
       - "8080:8080"
     command: ["start-dev", "--log-level=info", "--https-port=8443", "--hostname-strict=false"]
+
+volumes:
+  keycloak_data:
