@@ -18,9 +18,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/**").permitAll()
-//                        .requestMatchers("/api/register").hasRole("realm-admin")
-//                        .requestMatchers("/api/register").permitAll()
-//                        .requestMatchers("/private").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
