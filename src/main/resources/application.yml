@@ -2,18 +2,27 @@ server:
   port: 8081
 
 spring:
+  application:
+    name: auth-service
+
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/celia-auth-realm
+          issuer-uri: ${app.keycloak.server-url}/realms/${app.keycloak.realm}
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
-  application:
-    name: auth-service
 
 app:
   keycloak:
-    serverUrl: http://localhost:8080
+    server-host: localhost
+    server-port: 8080
+    server-url: http://${app.keycloak.server-host}:${app.keycloak.server-port}
+
+    admin-realm: master
+    admin-client-id: admin-cli
+    admin-username: admin
+    admin-password: admin
+
     realm: celia-auth-realm
-    clientId: celia-auth-client
-    clientSecret: 15o0ClbLC4ZSQzCZYj4360EfOM4mPCqN
+    client-id: celia-auth-client
+    client-secret: client-secret
