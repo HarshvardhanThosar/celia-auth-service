@@ -1,39 +1,68 @@
 package com.celia.auth_service.controllers;
-import com.celia.auth_service.services.CommunityAuthService;
+
+import com.celia.auth_service.dtos.LoginDto;
+import com.celia.auth_service.dtos.UserDto;
+import jakarta.ws.rs.core.Response;
+import lombok.RequiredArgsConstructor;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.Collections;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/users")
+@RequiredArgsConstructor
 public class CommunityAuthController {
-    private final CommunityAuthService userService;
 
-    public CommunityAuthController(CommunityAuthService userService) {
-        this.userService = userService;
-    }
+    private final Keycloak keycloak;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(
-            @RequestParam String username,
-            @RequestParam String email,
-            @RequestParam String password) {
+    public ResponseEntity<String> registerUser(@RequestBody UserDto userDto) {
+        UserRepresentation user = new UserRepresentation();
+        user.setUsername(userDto.getUsername());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setEmail(userDto.getEmail());
+        user.setEnabled(true);
 
-        System.out.println("Registering user: " + username);
-        String result = userService.createUser(username, email, password);
-        return ResponseEntity.ok(result);
+        CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setType(CredentialRepresentation.PASSWORD);
+        credential.setValue(userDto.getPassword());
+        credential.setTemporary(false);
+
+        user.setCredentials(Collections.singletonList(credential));
+
+        Response response = keycloak.realm("celia-auth-realm").users().create(user);
+
+        if (response.getStatus() == 201) {
+            return ResponseEntity.ok("User created successfully");
+        } else {
+            return ResponseEntity.status(response.getStatus()).body("Failed to create user");
+        }
     }
 
-    @GetMapping("/public")
-    public String publicEndpoint() {
-        return "This is a public endpoint.";
-    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+        try {
+            Keycloak keycloak = KeycloakBuilder.builder()
+                    .serverUrl("http://localhost:8080")
+                    .realm("celia-auth-realm")
+                    .clientId("celia-auth-client")
+                    .grantType(OAuth2Constants.PASSWORD)
+                    .username(loginDto.getUsername())
+                    .password(loginDto.getPassword())
+                    .build();
 
-    @GetMapping("/private")
-    public Map<String, Object> privateEndpoint(@AuthenticationPrincipal Jwt jwt) {
-        return jwt.getClaims();
+            AccessTokenResponse tokenResponse = keycloak.tokenManager().getAccessToken();
+            return ResponseEntity.ok(tokenResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
     }
 }
