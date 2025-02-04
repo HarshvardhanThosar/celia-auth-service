@@ -1,14 +1,18 @@
 package com.celia.auth_service.services.implimentations;
 
 import com.celia.auth_service.dtos.CommunityUserDTO;
+import com.celia.auth_service.dtos.LoginCommunityUserDTO;
 import com.celia.auth_service.dtos.RegisterCommunityUserDTO;
 import com.celia.auth_service.dtos.ResponseBodyDTO;
 import com.celia.auth_service.services.CommunityAuthServiceInterface;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,6 +67,41 @@ public class CommunityAuthService implements CommunityAuthServiceInterface {
             throw new RuntimeException(e);
         }
 
+    }
+
+    /// Logs in an existing user for the application
+    ///
+    /// @param login_community_user_dto LoginCommunityUserDTO
+    /// @return ResponseEntity<ResponseBodyDTO <AccessTokenResponse>>
+    @Override
+    public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> login_community_user(LoginCommunityUserDTO login_community_user_dto) {
+        String username = login_community_user_dto.username();
+        String password = login_community_user_dto.password();
+
+        try {
+            AccessTokenResponse tokenResponse = authenticate_user(username, password);
+            String message = "Login successful!";
+            ResponseBodyDTO<AccessTokenResponse> responseBody = new ResponseBodyDTO<>(message, tokenResponse, HttpStatus.OK.value(), null);
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception e) {
+            log.error("Login failed for user: {} | Error: {}", username, e.getMessage());
+            String errorMessage = "Invalid credentials or failed authentication.";
+            ResponseBodyDTO<AccessTokenResponse> responseBody = new ResponseBodyDTO<>(errorMessage, null, HttpStatus.UNAUTHORIZED.value(), null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+        }
+    }
+
+    private AccessTokenResponse authenticate_user(String username, String password) {
+        Keycloak keycloakAuth = KeycloakBuilder.builder()
+                .serverUrl(keycloak_server_url)
+                .realm(keycloak_realm)
+                .clientId(keycloak_client_id)
+                .grantType(OAuth2Constants.PASSWORD)
+                .username(username)
+                .password(password)
+                .build();
+
+        return keycloakAuth.tokenManager().getAccessToken();
     }
 
     private static UserRepresentation get_user_representation(RegisterCommunityUserDTO register_community_user_dto, String email) {

@@ -2,17 +2,9 @@ package com.celia.auth_service.controllers;
 
 import com.celia.auth_service.dtos.*;
 import com.celia.auth_service.services.implimentations.CommunityAuthService;
-import jakarta.ws.rs.core.Response;
-import org.keycloak.OAuth2Constants;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.AccessTokenResponse;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
 
 @RestController
 @RequestMapping("/community")
@@ -27,6 +19,11 @@ public class CommunityAuthController {
     @PostMapping("/users/register")
     public ResponseEntity<ResponseBodyDTO<CommunityUserDTO>> register_new_community_user(@RequestBody RegisterCommunityUserDTO _new_community_user_dto) {
         return community_authService.register_new_community_user(_new_community_user_dto);
+    }
+
+    @PostMapping("/users/login")
+    public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> login_community_user(@RequestBody LoginCommunityUserDTO _login_community_user_dto) {
+        return community_authService.login_community_user(_login_community_user_dto);
     }
 
 //    @PostMapping("/users/register")
