@@ -1,6 +1,10 @@
 package com.celia.auth_service.controllers;
 
-import com.celia.auth_service.dtos.*;
+import com.celia.auth_service.dtos.requests.LoginCommunityUserRequestDTO;
+import com.celia.auth_service.dtos.requests.RefreshTokenRequestDTO;
+import com.celia.auth_service.dtos.requests.RegisterCommunityUserRequestDTO;
+import com.celia.auth_service.dtos.responses.CommunityUserResponseDTO;
+import com.celia.auth_service.dtos.responses.ResponseBodyDTO;
 import com.celia.auth_service.services.implimentations.CommunityAuthService;
 import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.http.ResponseEntity;
@@ -12,66 +16,23 @@ public class CommunityAuthController {
 
     private final CommunityAuthService community_authService;
 
-    public CommunityAuthController(CommunityAuthService communityAuthService) {
-        community_authService = communityAuthService;
+    public CommunityAuthController(CommunityAuthService _community_authService) {
+        community_authService = _community_authService;
     }
 
-    @PostMapping("/users/register")
-    public ResponseEntity<ResponseBodyDTO<CommunityUserDTO>> register_new_community_user(@RequestBody RegisterCommunityUserDTO _new_community_user_dto) {
-        return community_authService.register_new_community_user(_new_community_user_dto);
+    @PostMapping("/register")
+    public ResponseEntity<ResponseBodyDTO<CommunityUserResponseDTO>> register_new_community_user(@RequestBody RegisterCommunityUserRequestDTO _new_community_user_request_dto) {
+        return community_authService.register_new_community_user(_new_community_user_request_dto);
     }
 
-    @PostMapping("/users/login")
-    public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> login_community_user(@RequestBody LoginCommunityUserDTO _login_community_user_dto) {
-        return community_authService.login_community_user(_login_community_user_dto);
+    @PostMapping("/login")
+    public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> login_community_user(@RequestBody LoginCommunityUserRequestDTO _login_community_user_request_dto) {
+        return community_authService.login_community_user(_login_community_user_request_dto);
     }
 
-//    @PostMapping("/users/register")
-//    public ResponseEntity<String> registerUser(@RequestBody UserDto userDto) {
-//        UserRepresentation user = new UserRepresentation();
-//        user.setUsername(userDto.getUsername());
-//        user.setFirstName(userDto.getFirstName());
-//        user.setLastName(userDto.getLastName());
-//        user.setEmail(userDto.getEmail());
-//        user.setEnabled(true);
-//
-//        CredentialRepresentation credential = new CredentialRepresentation();
-//        credential.setType(CredentialRepresentation.PASSWORD);
-//        credential.setValue(userDto.getPassword());
-//        credential.setTemporary(false);
-//
-//        user.setCredentials(Collections.singletonList(credential));
-//
-//        Response response = keycloak.realm(keycloak_realm).users().create(user);
-//
-//        if (response.getStatus() == 201) {
-//            return ResponseEntity.ok("User created successfully");
-//        } else {
-//            return ResponseEntity.status(response.getStatus()).body("Failed to create user");
-//        }
-//    }
-//
-//    @PostMapping("/users/login")
-//    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
-//        try {
-//            Keycloak keycloak = KeycloakBuilder.builder()
-//                    .serverUrl(keycloak_server_url)
-//                    .realm(keycloak_realm)
-//                    .clientId(keycloak_client_id)
-//                    .grantType(OAuth2Constants.PASSWORD)
-//                    .username(loginDto.getUsername())
-//                    .password(loginDto.getPassword())
-//                    .build();
-//
-//            AccessTokenResponse tokenResponse = keycloak.tokenManager().getAccessToken();
-//            return ResponseEntity.ok(tokenResponse);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(401).body("Invalid credentials");
-//        }
-//    }
-//
-//    @GetMapping("/users/")
-//    public ResponseEntity<UserDto> getUser() {
-//        return null;
-//    }
+    @PostMapping("/refresh")
+    public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> refresh_token(@RequestBody RefreshTokenRequestDTO _refresh_token) {
+        return community_authService.refresh_token(_refresh_token);
+    }
+
 }

@@ -1,6 +1,6 @@
-package com.celia.auth_service.dtos;
+package com.celia.auth_service.dtos.responses;
 
-public record CommunityUserDTO(
+public record CommunityUserResponseDTO(
         String username,
         String email,
         String first_name,

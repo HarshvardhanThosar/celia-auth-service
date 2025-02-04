@@ -1,6 +1,6 @@
-package com.celia.auth_service.dtos;
+package com.celia.auth_service.dtos.requests;
 
-public record RegisterCommunityUserDTO(
+public record RegisterCommunityUserRequestDTO(
         String username,
         String password,
         String email,

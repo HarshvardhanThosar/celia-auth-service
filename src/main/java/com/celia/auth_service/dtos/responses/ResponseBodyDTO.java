@@ -1,4 +1,4 @@
-package com.celia.auth_service.dtos;
+package com.celia.auth_service.dtos.responses;
 
 public record ResponseBodyDTO<T>(
         String message,    // Message describing the result
