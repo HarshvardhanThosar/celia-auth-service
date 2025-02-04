@@ -1,6 +1,11 @@
 package com.celia.auth_service.services.implimentations;
 
-import com.celia.auth_service.clients.KeycloakFeignClient;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import com.celia.auth_service.dtos.requests.RefreshTokenRequestDTO;
 import com.celia.auth_service.dtos.responses.CommunityUserResponseDTO;
 import com.celia.auth_service.dtos.requests.LoginCommunityUserRequestDTO;
@@ -31,8 +36,6 @@ import java.util.Map;
 public class CommunityAuthService implements CommunityAuthServiceInterface {
 
     private final Keycloak keycloak;
-
-    private final KeycloakFeignClient keycloak_feign_client;
 
     @Value("${app.keycloak.realm}")
     private String keycloak_realm;
@@ -119,15 +122,26 @@ public class CommunityAuthService implements CommunityAuthServiceInterface {
     }
 
     private AccessTokenResponse refresh_access_token(RefreshTokenRequestDTO refresh_token_request_dto) {
+        // Keycloak token endpoint URL
         String refresh_token = refresh_token_request_dto.refresh_token();
+        String tokenUrl = keycloak_server_url + "/realms/" + keycloak_realm + "/protocol/openid-connect/token";
 
-        Map<String, Object> response = keycloak_feign_client.refreshAccessToken(
-                "celia-auth-client",
-                "refresh_token",
-                refresh_token
-        );
-        System.out.println("Response: " + response);
-        return (AccessTokenResponse) response;
+        // Set up headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        // Set up request body
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("client_id", keycloak_client_id);
+        requestBody.add("grant_type", "refresh_token");
+        requestBody.add("refresh_token", refresh_token);
+
+        // Create the HTTP entity
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Make the HTTP POST request
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.postForObject(tokenUrl, requestEntity, AccessTokenResponse.class);
     }
 
     private AccessTokenResponse authenticate_user(String username, String password) {
