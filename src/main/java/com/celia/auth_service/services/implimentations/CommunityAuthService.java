@@ -1,5 +1,6 @@
 package com.celia.auth_service.services.implimentations;
 
+import com.celia.auth_service.dtos.requests.LogOutRequestDTO;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -91,7 +92,7 @@ public class CommunityAuthService implements CommunityAuthServiceInterface {
 
         try {
             AccessTokenResponse tokenResponse = authenticate_user(username, password);
-            String message = "User logged-in successfully!!";
+            String message = "User logged-in successfully!";
             ResponseBodyDTO<AccessTokenResponse> responseBody = new ResponseBodyDTO<>(message, tokenResponse, HttpStatus.OK.value(), null);
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
@@ -110,7 +111,7 @@ public class CommunityAuthService implements CommunityAuthServiceInterface {
     public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> refresh_token(RefreshTokenRequestDTO refresh_token_request_dto) {
         try {
             AccessTokenResponse tokenResponse = refresh_access_token(refresh_token_request_dto);
-            String message = "Token refreshed successfully!!";
+            String message = "Token refreshed successfully!";
             ResponseBodyDTO<AccessTokenResponse> responseBody = new ResponseBodyDTO<>(message, tokenResponse, HttpStatus.OK.value(), null);
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
@@ -118,6 +119,50 @@ public class CommunityAuthService implements CommunityAuthServiceInterface {
             String errorMessage = "Invalid credentials or failed authentication.";
             ResponseBodyDTO<AccessTokenResponse> responseBody = new ResponseBodyDTO<>(errorMessage, null, HttpStatus.UNAUTHORIZED.value(), null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+        }
+    }
+
+    /// Log out an existing session
+    ///
+    /// @param log_out_request_dto LogOutRequestDTO
+    /// @return ResponseEntity<ResponseBodyDTO < ?>>
+    @Override
+    public ResponseEntity<ResponseBodyDTO<String>> log_out(LogOutRequestDTO log_out_request_dto) {
+        String refresh_token = log_out_request_dto.refresh_token();
+        try {
+            keycloak.tokenManager().invalidate(refresh_token);
+            HttpStatus status = HttpStatus.OK;
+            String message = "User logged out successfully!";
+            ResponseBodyDTO<String> response_body = new ResponseBodyDTO<>(message, message, status.value(), null);
+            return new ResponseEntity<ResponseBodyDTO<String>>(response_body, status);
+        } catch (Exception e) {
+            HttpStatus status = HttpStatus.UNAUTHORIZED;
+            String message = "Failed to logout";
+            ResponseBodyDTO<String> response_body = new ResponseBodyDTO<>(message, message, status.value(), null);
+            log.error("Logout failed: {}", e.getMessage());
+            return new ResponseEntity<ResponseBodyDTO<String>>(response_body, status);
+        }
+    }
+
+    /// Validate an access token
+    ///
+    /// @param access_token String
+    /// @return ResponseEntity<ResponseBodyDTO < Boolean>>
+    @Override
+    public ResponseEntity<ResponseBodyDTO<Boolean>> validate_token(String access_token) {
+        try {
+            access_token = access_token.replace("Bearer ", "");
+//            keycloak.tokenManager().validate(access_token);
+            HttpStatus status = HttpStatus.OK;
+            String message = "Token validated successfully!";
+            ResponseBodyDTO<Boolean> response_body = new ResponseBodyDTO<>(message, true, status.value(), null);
+            return new ResponseEntity<ResponseBodyDTO<Boolean>>(response_body, status);
+        } catch (Exception e) {
+            log.error("Invalid token: {}", e.getMessage());
+            HttpStatus status = HttpStatus.UNAUTHORIZED;
+            String message = "Failed to validate!";
+            ResponseBodyDTO<Boolean> response_body = new ResponseBodyDTO<>(message, false, status.value(), null);
+            return new ResponseEntity<ResponseBodyDTO<Boolean>>(response_body, status);
         }
     }
 

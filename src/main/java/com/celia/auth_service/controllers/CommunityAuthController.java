@@ -1,5 +1,6 @@
 package com.celia.auth_service.controllers;
 
+import com.celia.auth_service.dtos.requests.LogOutRequestDTO;
 import com.celia.auth_service.dtos.requests.LoginCommunityUserRequestDTO;
 import com.celia.auth_service.dtos.requests.RefreshTokenRequestDTO;
 import com.celia.auth_service.dtos.requests.RegisterCommunityUserRequestDTO;
@@ -33,6 +34,18 @@ public class CommunityAuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ResponseBodyDTO<AccessTokenResponse>> refresh_token(@RequestBody RefreshTokenRequestDTO _refresh_token) {
         return community_authService.refresh_token(_refresh_token);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseBodyDTO<String>> logout(@RequestBody LogOutRequestDTO _log_out_request_dto) {
+        return community_authService.log_out(_log_out_request_dto);
+
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<ResponseBodyDTO<Boolean>> validate_token(@RequestHeader("Authorization") String access_token) {
+
+        return null;
     }
 
 }
